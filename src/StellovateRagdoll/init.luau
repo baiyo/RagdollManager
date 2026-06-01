@@ -23,6 +23,8 @@
 -- SOFTWARE.
 
 local Ragdoll = {}
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RagdollTypes = require("@self/RagdollTypes")
 
 type SocketResult = {
@@ -36,7 +38,7 @@ type ActiveRig = {
 	no_collides: { NoCollisionConstraint },
 	attachments: { Attachment },
 	motors: { Motor6D },
-	-- presim: RBXScriptConnection,
+	presim: RBXScriptConnection,
 	can_collide: { [BasePart]: boolean },
 	root_priority: number,
 }
@@ -170,11 +172,11 @@ function Ragdoll:Start(Character: Model)
 
 	local motors = DisableMotors(Character, rig)
 
-	-- local presimConnection = game:GetService("RunService").PreSimulation:Connect(function()
-	-- 	for _, m in motors do
-	-- 		m.Transform = CFrame.identity
-	-- 	end
-	-- end)
+	local presimConnection = RunService.PreSimulation:Connect(function()
+		for _, m in motors do
+			m.Transform = CFrame.identity
+		end
+	end)
 
 	for _, motorDef in rig.motors do
 		if motorDef.root then
@@ -213,7 +215,7 @@ function Ragdoll:Start(Character: Model)
 		no_collides = no_collides,
 		attachments = Attachments,
 		motors = motors,
-		-- presim = presimConnection,
+		presim = presimConnection,
 		can_collide = limb_collision,
 		root_priority = rootPriority,
 	}
@@ -223,7 +225,7 @@ function Ragdoll:Stop(Character: Model)
 	local Arr = ActiveRigs[Character]
 	if not Arr then return end
 
-	-- Arr.presim:Disconnect()
+	Arr.presim:Disconnect()
 
 	for _, motor in Arr.motors do
 		motor.Transform = CFrame.identity
